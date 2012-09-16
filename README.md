@@ -1,4 +1,4 @@
-amazon-search-auto
-==================
+Amazonize
+=========
 
-searches amazon automatically for a product extracted from the header
+Amazonize a page to push products
