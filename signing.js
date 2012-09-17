@@ -269,10 +269,11 @@
     var content, x, _i, _len, _results;
     console.log("called");
     console.log(results);
+    $("#results").html("");
     _results = [];
     for (_i = 0, _len = results.length; _i < _len; _i++) {
       x = results[_i];
-      content = "<p><img height='40' src='" + x.image + "' /></p>";
+      content = "<p><img height='40' src='" + x.image + "' /> <b>" + x.title + " - " + x.real_price + "</b>  </p>";
       _results.push($("#results").append(content));
     }
     return _results;
