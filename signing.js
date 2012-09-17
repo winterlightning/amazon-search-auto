@@ -77,28 +77,34 @@
     return signedUrl;
   };
 
-  window.call_api = function(url, word) {
+  window.call_api = function(url, word, callback) {
     var xhr,
       _this = this;
     xhr = new XMLHttpRequest();
     xhr.open("GET", url);
     xhr.onreadystatechange = function(status, response) {
+      var results;
       if (xhr.readyState === 4) {
         console.log("xhr", xhr);
         console.log("TOKEN RETRIEVAL LOGGED");
         window.obj = $.xml2json(xhr.response);
         console.log("OBJ", window.obj);
-        return window.process_items(window.obj);
+        results = window.process_items(window.obj);
+        console.log("results 2", results);
+        console.log("callback exist", callback != null);
+        if (callback != null) {
+          return callback(results);
+        }
       }
     };
     xhr.send();
     return window.xhr = xhr;
   };
 
-  window.search_process = function(searchword) {
+  window.search_process = function(searchword, callback) {
     var url;
     url = window.search_item(searchword);
-    return window.call_api(url, searchword);
+    return window.call_api(url, searchword, callback);
   };
 
   window.camping_list = ["flashlight", "tent", "grill", "canoe", "lighter", "binoculars", "rope", "iPod", "iPad", "Nexus", "Kindle", "cumin", "cheddar cheese", "black pepper"];
@@ -117,33 +123,40 @@
   window.stored_items = {};
 
   window.process_items = function(query) {
-    var index, pulled_data, search_size, x, _i, _j, _results, _results1;
-    search_size = query["Items"]["Item"].length - 1;
-    if (search_size > 5) {
-      search_size = 4;
-    }
-    console.log("search", (function() {
-      _results = [];
-      for (var _i = 0; 0 <= search_size ? _i <= search_size : _i >= search_size; 0 <= search_size ? _i++ : _i--){ _results.push(_i); }
-      return _results;
-    }).apply(this));
-    _results1 = [];
-    for (index = _j = 0; 0 <= search_size ? _j <= search_size : _j >= search_size; index = 0 <= search_size ? ++_j : --_j) {
-      x = query["Items"]["Item"][index];
-      pulled_data = {};
-      pulled_data["url"] = x["DetailPageURL"];
-      if (x["ItemAttributes"]["ListPrice"] != null) {
-        pulled_data["price"] = x["ItemAttributes"]["ListPrice"]["FormattedPrice"];
+    var index, pulled_data, results, search_size, x, _i, _j, _results;
+    if (query["Items"] != null) {
+      search_size = query["Items"]["Item"].length - 1;
+      if (search_size > 5) {
+        search_size = 4;
       }
-      pulled_data["title"] = x["ItemAttributes"]["Title"];
-      pulled_data["ASIN"] = x["ASIN"];
-      if (x["OfferSummary"]["LowestNewPrice"] != null) {
-        pulled_data["real_price"] = x["OfferSummary"]["LowestNewPrice"]["FormattedPrice"];
+      console.log("search", (function() {
+        _results = [];
+        for (var _i = 0; 0 <= search_size ? _i <= search_size : _i >= search_size; 0 <= search_size ? _i++ : _i--){ _results.push(_i); }
+        return _results;
+      }).apply(this));
+      results = [];
+      for (index = _j = 0; 0 <= search_size ? _j <= search_size : _j >= search_size; index = 0 <= search_size ? ++_j : --_j) {
+        x = query["Items"]["Item"][index];
+        pulled_data = {};
+        pulled_data["url"] = x["DetailPageURL"];
+        if (x["ItemAttributes"]["ListPrice"] != null) {
+          pulled_data["price"] = x["ItemAttributes"]["ListPrice"]["FormattedPrice"];
+        }
+        pulled_data["title"] = x["ItemAttributes"]["Title"];
+        pulled_data["ASIN"] = x["ASIN"];
+        if (x["OfferSummary"]["LowestNewPrice"] != null) {
+          pulled_data["real_price"] = x["OfferSummary"]["LowestNewPrice"]["FormattedPrice"];
+        }
+        pulled_data["image"] = x["SmallImage"]["URL"];
+        console.log("pulled data: ", pulled_data);
+        results.push(pulled_data);
       }
-      pulled_data["image"] = x["MediumImage"]["URL"];
-      _results1.push(console.log("pulled data: ", pulled_data));
+      console.log("results", results);
+      return results;
+    } else {
+      console.log("nothing found");
+      return [];
     }
-    return _results1;
   };
 
   window.encodeNameValuePairs = function(pairs) {
@@ -250,6 +263,27 @@
 
   window.getSecretAccessKey = function() {
     return "RWzMxmIR3w6zjqzr7Qe1TF5Wb8t1VCqBjglWpUsn";
+  };
+
+  window.append_results = function(results) {
+    var content, x, _i, _len, _results;
+    console.log("called");
+    console.log(results);
+    _results = [];
+    for (_i = 0, _len = results.length; _i < _len; _i++) {
+      x = results[_i];
+      content = "<p><img height='40' src='" + x.image + "' /></p>";
+      _results.push($("#results").append(content));
+    }
+    return _results;
+  };
+
+  window.search = function() {
+    var search_term;
+    console.log("searching");
+    search_term = $("#search_term").val();
+    window.search_process(search_term, window.append_results);
+    return false;
   };
 
 }).call(this);

@@ -111,7 +111,7 @@ window.search_item = ( item ) ->
   
   return signedUrl
 
-window.call_api = ( url, word ) ->
+window.call_api = ( url, word, callback ) ->
   xhr = new XMLHttpRequest()
   
   xhr.open("GET", url)
@@ -126,14 +126,18 @@ window.call_api = ( url, word ) ->
       
       window.obj = $.xml2json(xhr.response)
       console.log("OBJ", window.obj)
-      window.process_items( window.obj )
+      results = window.process_items( window.obj )
+      
+      console.log("results 2", results)
+      console.log("callback exist", callback?)
+      callback(results) if callback?     
             
   xhr.send()
   window.xhr = xhr
 
-window.search_process = ( searchword ) ->
+window.search_process = ( searchword, callback ) ->
   url = window.search_item ( searchword )
-  window.call_api(url, searchword)
+  window.call_api(url, searchword, callback)
 
 window.camping_list = ["flashlight", "tent", "grill", "canoe", "lighter", "binoculars", "rope", "iPod", "iPad", "Nexus", "Kindle", "cumin", "cheddar cheese", "black pepper"]
 
@@ -147,27 +151,37 @@ window.process_items = ( query ) ->
 
   #most_relevant = query["Items"]["SearchResultsMap"]["SearchIndex"][0]["ASIN"][0]
   #console.log("most relevant", most_relevant)
-  
-  search_size = query["Items"]["Item"].length - 1
-  search_size = 4 if search_size > 5
-  
-  console.log("search", [0..search_size])
-  
-  for index in [0..search_size]
+  if query["Items"]?
+    search_size = query["Items"]["Item"].length - 1
+    search_size = 4 if search_size > 5
     
-    x = query["Items"]["Item"][index]
-    #console.log("Data", x)
-    pulled_data = {}
-    pulled_data["url"] = x["DetailPageURL"]
-    pulled_data["price"] = x["ItemAttributes"]["ListPrice"]["FormattedPrice"] if x["ItemAttributes"]["ListPrice"]?
-    pulled_data["title"] = x["ItemAttributes"]["Title"]
-    pulled_data["ASIN"] = x["ASIN"]
-    pulled_data["real_price"] = x["OfferSummary"]["LowestNewPrice"]["FormattedPrice"] if x["OfferSummary"]["LowestNewPrice"]?
-    pulled_data["image"] = x["MediumImage"]["URL"]
+    console.log("search", [0..search_size])
     
-    console.log("pulled data: ", pulled_data)
+    results = []
     
-    #window.stored_items[key] = pulled_data
+    for index in [0..search_size]
+      
+      x = query["Items"]["Item"][index]
+      #console.log("Data", x)
+      pulled_data = {}
+      pulled_data["url"] = x["DetailPageURL"]
+      pulled_data["price"] = x["ItemAttributes"]["ListPrice"]["FormattedPrice"] if x["ItemAttributes"]["ListPrice"]?
+      pulled_data["title"] = x["ItemAttributes"]["Title"]
+      pulled_data["ASIN"] = x["ASIN"]
+      pulled_data["real_price"] = x["OfferSummary"]["LowestNewPrice"]["FormattedPrice"] if x["OfferSummary"]["LowestNewPrice"]?
+      pulled_data["image"] = x["SmallImage"]["URL"]
+      
+      console.log("pulled data: ", pulled_data)
+      results.push(pulled_data)
+      
+      #window.stored_items[key] = pulled_data
+    
+    console.log("results", results)
+    
+    return results
+  else
+    console.log("nothing found")
+    return []
   
 window.encodeNameValuePairs = (pairs) ->
   i = 0
@@ -255,3 +269,20 @@ window.getAccessKeyId = ->
 
 window.getSecretAccessKey = ->
   "RWzMxmIR3w6zjqzr7Qe1TF5Wb8t1VCqBjglWpUsn"
+  
+#Actual calls
+
+window.append_results = (results)->
+  console.log("called")
+  console.log(results)
+  for x in results
+    content = "<p><img height='40' src='#{ x.image }' /></p>"
+    
+    $("#results").append(content)
+
+window.search = ()->
+  #e.preventDefault()
+  console.log("searching")
+  search_term = $("#search_term").val()
+  window.search_process( search_term, window.append_results )
+  return false

@@ -18,12 +18,13 @@
 		<script type="text/javascript" src="jquery.xml2json.js"></script>
 		<script type="text/javascript" src="jssha2/sha2.js"></script>
 		<script type="text/javascript" src="signing.js"></script>
+		
 	</head>
 	<body style="text-align: center;">
 		<p>Amazon api</p>
-		<input type="text" name="fname" />
+		<form onSubmit="window.search();return false;"><input type="text" name="fname" id="search_term" /></form>
 		
-		<div id="result"></div>
+		<div id="results"></div>
 		
 	</body>
 </html>
