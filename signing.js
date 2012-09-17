@@ -87,7 +87,8 @@
         console.log("xhr", xhr);
         console.log("TOKEN RETRIEVAL LOGGED");
         window.obj = $.xml2json(xhr.response);
-        return window.return_container[word] = window.obj;
+        console.log("OBJ", window.obj);
+        return window.process_items(window.obj);
       }
     };
     xhr.send();
@@ -115,15 +116,20 @@
 
   window.stored_items = {};
 
-  window.process_items = function() {
-    var key, pulled_data, query, x, _ref, _results;
-    _ref = window.return_container;
-    _results = [];
-    for (key in _ref) {
-      query = _ref[key];
-      console.log("key", key);
-      x = query["Items"]["Item"][0];
-      console.log("Data", x);
+  window.process_items = function(query) {
+    var index, pulled_data, search_size, x, _i, _j, _results, _results1;
+    search_size = query["Items"]["Item"].length - 1;
+    if (search_size > 5) {
+      search_size = 4;
+    }
+    console.log("search", (function() {
+      _results = [];
+      for (var _i = 0; 0 <= search_size ? _i <= search_size : _i >= search_size; 0 <= search_size ? _i++ : _i--){ _results.push(_i); }
+      return _results;
+    }).apply(this));
+    _results1 = [];
+    for (index = _j = 0; 0 <= search_size ? _j <= search_size : _j >= search_size; index = 0 <= search_size ? ++_j : --_j) {
+      x = query["Items"]["Item"][index];
       pulled_data = {};
       pulled_data["url"] = x["DetailPageURL"];
       if (x["ItemAttributes"]["ListPrice"] != null) {
@@ -135,10 +141,9 @@
         pulled_data["real_price"] = x["OfferSummary"]["LowestNewPrice"]["FormattedPrice"];
       }
       pulled_data["image"] = x["MediumImage"]["URL"];
-      console.log("pulled data: ", pulled_data);
-      _results.push(window.stored_items[key] = pulled_data);
+      _results1.push(console.log("pulled data: ", pulled_data));
     }
-    return _results;
+    return _results1;
   };
 
   window.encodeNameValuePairs = function(pairs) {

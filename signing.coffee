@@ -125,7 +125,8 @@ window.call_api = ( url, word ) ->
       #console.log("response: ", xhr.response)
       
       window.obj = $.xml2json(xhr.response)
-      window.return_container[word] = window.obj
+      console.log("OBJ", window.obj)
+      window.process_items( window.obj )
             
   xhr.send()
   window.xhr = xhr
@@ -142,15 +143,20 @@ window.populate_list = ()->
     window.search_process( word)
 
 window.stored_items = {}
-window.process_items = () ->
-  for key, query of window.return_container
-    console.log("key", key)
-    #most_relevant = query["Items"]["SearchResultsMap"]["SearchIndex"][0]["ASIN"][0]
-    #console.log("most relevant", most_relevant)
+window.process_items = ( query ) ->
+
+  #most_relevant = query["Items"]["SearchResultsMap"]["SearchIndex"][0]["ASIN"][0]
+  #console.log("most relevant", most_relevant)
+  
+  search_size = query["Items"]["Item"].length - 1
+  search_size = 4 if search_size > 5
+  
+  console.log("search", [0..search_size])
+  
+  for index in [0..search_size]
     
-    #for x in query["Items"]["Item"]
-    x = query["Items"]["Item"][0]
-    console.log("Data", x)
+    x = query["Items"]["Item"][index]
+    #console.log("Data", x)
     pulled_data = {}
     pulled_data["url"] = x["DetailPageURL"]
     pulled_data["price"] = x["ItemAttributes"]["ListPrice"]["FormattedPrice"] if x["ItemAttributes"]["ListPrice"]?
@@ -161,7 +167,7 @@ window.process_items = () ->
     
     console.log("pulled data: ", pulled_data)
     
-    window.stored_items[key] = pulled_data
+    #window.stored_items[key] = pulled_data
   
 window.encodeNameValuePairs = (pairs) ->
   i = 0
