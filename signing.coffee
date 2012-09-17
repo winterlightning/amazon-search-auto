@@ -277,7 +277,7 @@ window.append_results = (results)->
   console.log(results)
   $("#results").html("")
   for x in results
-    content = "<p><img height='40' src='#{ x.image }' /> <b>#{ x.title } - #{x.real_price}</b>  </p>"
+    content = "<p><img height='50' src='#{ x.image }' /> <b>#{ x.title } - #{x.real_price}</b>  </p>"
     
     $("#results").append(content)
 
